@@ -74,6 +74,23 @@ section h3 {
   margin-bottom: 8px;
 }
 
+.activity-card ul {
+  margin-top: 10px;
+  padding: 10px 15px; /* Add padding to include bullets inside the background */
+  list-style-position: inside; /* Ensure bullets are inside the background */
+  color: #555;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.activity-card ul li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500; /* Make text slightly bolder */
+  padding: 5px 0;
+}
+
 .form-group {
   margin-bottom: 15px;
 }
