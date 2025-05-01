@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear loading message
       activitiesList.innerHTML = "";
 
+      // Clear existing options in the dropdown but keep the default option
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
+
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
@@ -27,7 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <p><strong>Participants:</strong></p>
           <ul>
-            ${details.participants.map(participant => `<li>${participant}</li>`).join("")}
+            ${details.participants.map(participant => `
+              <li>
+                ${participant}
+                <button class="delete-participant" data-activity="${name}" data-participant="${participant}">❌</button>
+              </li>
+            `).join("")}
           </ul>
         `;
 
@@ -66,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        fetchActivities(); // Refresh the activities list
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
@@ -82,6 +91,41 @@ document.addEventListener("DOMContentLoaded", () => {
       messageDiv.className = "error";
       messageDiv.classList.remove("hidden");
       console.error("Error signing up:", error);
+    }
+  });
+
+  // Handle unregister functionality
+  document.addEventListener("click", async (event) => {
+    if (event.target.classList.contains("delete-participant")) {
+      const activity = event.target.dataset.activity;
+      const participant = event.target.dataset.participant;
+
+      try {
+        const response = await fetch(
+          `/activities/${encodeURIComponent(activity)}/unregister?email=${encodeURIComponent(participant)}`,
+          {
+            method: "POST",
+          }
+        );
+
+        // Update the unregister functionality to remove the participant from the UI on "Not Found" errors
+        if (response.ok) {
+          alert(`${participant} has been unregistered from ${activity}`);
+          fetchActivities(); // Refresh the activities list
+        } else {
+          const result = await response.json();
+          if (response.status === 404) {
+            alert("The participant or activity was not found. Removing from the list.");
+            // Remove the participant from the UI
+            event.target.closest("li").remove();
+          } else {
+            alert(result.detail || "An error occurred");
+          }
+        }
+      } catch (error) {
+        console.error("Error unregistering participant:", error);
+        alert("Failed to unregister participant. Please try again.");
+      }
     }
   });
 
